@@ -13,10 +13,7 @@ struct State {
 
 void process(State state, char * action1, char *action2, int a, int b);
 
-void move_onto(State state, int a, int b) ;
-void move_over(State state, int a, int b) ;
-void pile_onto(State state, int a, int b) ;
-void pile_over(State state, int a, int b) ;
+void move_pile_helper(State state, int a, int b, bool pile, bool over) ;
 
 // helpers
 int find_stack_height(int * stack, int b) ;
@@ -69,134 +66,68 @@ int main(int argc, const char *argv[])
 void process(State state, char * action1, char *action2, int a, int b) {
 	printf("%s %d %s %d\n", action1, a, action2, b);
 	if (action1[0] == 'm' && action2[1] == 'n') {
-		move_onto(state,a,b);
+		move_pile_helper(state,a,b, false, false);
 	} else if (action1[0] == 'm' && action2[1] == 'v') {
-		move_over(state,a,b);
+		move_pile_helper(state,a,b, false, true);
 	} else if (action1[0] == 'p' && action2[1] == 'n') {
-		pile_onto(state,a,b);
+		move_pile_helper(state,a,b, true, false);
 	} else if (action1[0] == 'p' && action2[1] == 'v') {
-		pile_over(state,a,b);
+		move_pile_helper(state,a,b, true, true);
 	} else {
 		printf("unrecongized action\n");
 	}
 }
 
-void move_onto(State state, int a, int b) {
-	int i;
-	// find the stack that b is located in
-	int astacknum = state.blockToStack[a];
-	int bstacknum = state.blockToStack[b];
-	if(astacknum == bstacknum){
-		return;
-	}
-	int * astack = state.stacks[astacknum];
-	int * bstack = state.stacks[bstacknum];
-
-	
-	int astackheight = find_stack_height(astack, a);
-	int bstackheight = find_stack_height(bstack, b);
-
-
-	// move everything ontop of a to their original stacks
-	for (i = astackheight+1; astack[i] != -1; i++) {
-		int value = astack[i];
-		astack[i] = -1;
-		append_to_stack(state.stacks[value], value);
-		state.blockToStack[value] = value;
-	}
-	
-	// move everything ontop of b to their original stacks
-	for (i = bstackheight+1; bstack[i] != -1; i++) {
-		int value = bstack[i];
-		bstack[i] = -1;
-		append_to_stack(state.stacks[value], value);
-		state.blockToStack[value] = value;
-	}
-
-	// put a right ontop of b
-	astack[astackheight] = -1;
-	bstack[bstackheight+1] = a;
-	state.blockToStack[a] = bstacknum;
-}
-
-void move_over(State state, int a, int b) {
-	int i;
-	// find the stack that b is located in
-	int astacknum = state.blockToStack[a];
-	int bstacknum = state.blockToStack[b];
-	if(astacknum == bstacknum){
-		return;
-	}
-	int * astack = state.stacks[astacknum];
-	int * bstack = state.stacks[bstacknum];
-
-	
-	int astackheight = find_stack_height(astack, a);
-	int bstackheight = find_stack_height(bstack, b);
-
-	// move everything ontop of a to their original stacks
-	for (i = astackheight+1; astack[i] != -1; i++) {
-		int value = astack[i];
-		astack[i] = -1;
-		append_to_stack(state.stacks[value], value);
-		state.blockToStack[value] = value;
-	}
-
-	// put a in first free position above b
-	astack[astackheight] = -1;
-	for (i = bstackheight+1; bstack[i] != -1; i++) ;
-	bstack[i] = a;
-	state.blockToStack[a] = bstacknum;
-
-
-}
-
-void pile_onto(State state, int a, int b) {
-	int i;
-	// find the stack that b is located in
-	int astacknum = state.blockToStack[a];
-	int bstacknum = state.blockToStack[b];
-	if(astacknum == bstacknum){
-		return;
-	}
-	int * astack = state.stacks[astacknum];
-	int * bstack = state.stacks[bstacknum];
-
-	
-	int astackheight = find_stack_height(astack, a);
-	int bstackheight = find_stack_height(bstack, b);
-
-	// move everything ontop of b to their original stacks
-	for (i = bstackheight+1; bstack[i] != -1; i++) {
-		int value = bstack[i];
-		bstack[i] = -1;
-		append_to_stack(state.stacks[value], value);
-		state.blockToStack[value] = value;
-	}
-
-	// put a right ontop of b
-	astack[astackheight] = -1;
-	bstack[bstackheight+1] = a;
-	state.blockToStack[a] = bstacknum;
-
-	// move everything ontop of a, ontop of a's new location
-	for (i = 0; astack[astackheight+1+i] != -1; i++) {
-		int value = astack[i];
-		astack[astackheight+1+i] = -1;
-		bstack[bstackheight+2+i] = value;
-		state.blockToStack[value] = bstacknum;
-	}
-}
-
-void pile_over(State state, int a, int b) {
-}
 
 void move_pile_helper(State state, int a, int b, bool pile, bool over) {
+	int i;
+	// find the stack that b is located in
+	int astacknum = state.blockToStack[a];
+	int bstacknum = state.blockToStack[b];
+	if(astacknum == bstacknum){
+		return;
+	}
+	int * astack = state.stacks[astacknum];
+	int * bstack = state.stacks[bstacknum];
 
 	// if we're not piling, we need to move all the things above a
 	if(!pile) {
+		// move everything ontop of a to their original stacks
+		for (i = astackheight+1; astack[i] != -1; i++) {
+			int value = astack[i];
+			astack[i] = -1;
+			append_to_stack(state.stacks[value], value);
+			state.blockToStack[value] = value;
+		}
 	}
 
+	// if we're not placing it over, we're placing it onto b. The means we need to
+	// move all the things above b to their original location
+	if(!over) {
+		for (i = bstackheight+1; bstack[i] != -1; i++) {
+			int value = bstack[i];
+			bstack[i] = -1;
+			append_to_stack(state.stacks[value], value);
+			state.blockToStack[value] = value;
+		}
+	}
+	
+	// put a right ontop of b
+	astack[astackheight] = -1;
+	bstack[bstackheight+1] = a;
+	state.blockToStack[a] = bstacknum;
+	
+	// since we're piling, we need to move all of the things above a, to above a's
+	// new location
+	if(pile){
+		// move everything ontop of a, ontop of a's new location
+		for (i = 0; astack[astackheight+1+i] != -1; i++) {
+			int value = astack[i];
+			astack[astackheight+1+i] = -1;
+			bstack[bstackheight+2+i] = value;
+			state.blockToStack[value] = bstacknum;
+		}
+	}
 }
 
 // this function assume the array contains b
