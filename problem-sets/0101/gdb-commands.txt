@@ -1,0 +1,15 @@
+file a.out
+
+br main.cpp:126 if a == 6
+
+run < test1.txt
+
+display a
+display b
+display astacknum
+display bstacknum
+
+define nn
+	n
+	call debug_map(state.blockToStack, a)
+end

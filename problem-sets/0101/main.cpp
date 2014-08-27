@@ -4,6 +4,7 @@
 
 using namespace std;
 
+//#define DEBUG
 
 struct State {
 	unordered_map<int, int> blockToStack;
@@ -11,15 +12,17 @@ struct State {
 	int n;
 } ;
 
-void process(State state, char * action1, char *action2, int a, int b);
+void process(State & state, char * action1, char *action2, int a, int b);
 
-void move_pile_helper(State state, int a, int b, bool pile, bool over) ;
+void move_pile_helper(State & state, int a, int b, bool pile, bool over) ;
 
 // helpers
 int find_stack_height(int * stack, int b) ;
 void append_to_stack(int * stack, int value);
 
-void output(State state);
+void output_map(State & state) ;
+void outputStack(int * stack, int n) ;
+void output(State & state);
 
 
 int main(int argc, const char *argv[])
@@ -44,14 +47,27 @@ int main(int argc, const char *argv[])
 		}
 		
 		s.blockToStack[i] = i;
-			s.stacks[i][0] = i;
+		s.stacks[i][0] = i;
 	}
 
+	#ifdef DEBUG
+	output(s);
+	#endif
 	while (fscanf(stdin, "%s %d %s %d\n", action1, &a, action2, &b) > 0 && action1[0] != 'q') {
+		#ifdef DEBUG
+		printf("OOOOOOOOOOOOOOOOOOOOOO\n");
+		#endif
+
 		process(s, action1,action2,a,b);	
+
+		#ifdef DEBUG
+		output(s);
+		#endif
 	}	 
 	
+	#ifndef DEBUG
 	output(s);
+	#endif
 
 	// cleaning up all things we allocated
 	for (i = 0; i < n; i++) {
@@ -63,8 +79,10 @@ int main(int argc, const char *argv[])
 }
 
 
-void process(State state, char * action1, char *action2, int a, int b) {
+void process(State & state, char * action1, char *action2, int a, int b) {
+	#ifdef DEBUG
 	printf("%s %d %s %d\n", action1, a, action2, b);
+	#endif
 	if (action1[0] == 'm' && action2[1] == 'n') {
 		move_pile_helper(state,a,b, false, false);
 	} else if (action1[0] == 'm' && action2[1] == 'v') {
@@ -79,7 +97,7 @@ void process(State state, char * action1, char *action2, int a, int b) {
 }
 
 
-void move_pile_helper(State state, int a, int b, bool pile, bool over) {
+void move_pile_helper(State & state, int a, int b, bool pile, bool over) {
 	int i;
 	// find the stack that b is located in
 	int astacknum = state.blockToStack[a];
@@ -90,10 +108,22 @@ void move_pile_helper(State state, int a, int b, bool pile, bool over) {
 	int * astack = state.stacks[astacknum];
 	int * bstack = state.stacks[bstacknum];
 
+	int astackheight = find_stack_height(astack, a);
+	int bstackheight = find_stack_height(bstack, b);
+	#ifdef DEBUG
+	printf("a %d is on %d stack\n", a, astacknum);
+	printf("a %d stack height %d\n", a, astackheight);
+	printf("b %d is on %d stack\n", b, bstacknum);
+	printf("b %d stack height %d\n", b, bstackheight);
+	#endif
+
+
+
+
 	// if we're not piling, we need to move all the things above a
 	if(!pile) {
 		// move everything ontop of a to their original stacks
-		for (i = astackheight+1; astack[i] != -1; i++) {
+		for (i = astackheight+1; astack[i] != -1 && i < state.n; i++) {
 			int value = astack[i];
 			astack[i] = -1;
 			append_to_stack(state.stacks[value], value);
@@ -101,37 +131,58 @@ void move_pile_helper(State state, int a, int b, bool pile, bool over) {
 		}
 	}
 
+
 	// if we're not placing it over, we're placing it onto b. The means we need to
 	// move all the things above b to their original location
 	if(!over) {
-		for (i = bstackheight+1; bstack[i] != -1; i++) {
+		for (i = bstackheight+1; bstack[i] != -1 && i < state.n; i++) {
 			int value = bstack[i];
 			bstack[i] = -1;
 			append_to_stack(state.stacks[value], value);
 			state.blockToStack[value] = value;
 		}
 	}
+
 	
 	// put a right ontop of b
+	int ontopOverPos = 1;
+	if(over){
+		for (i = bstackheight+1; bstack[i] != -1 && i < state.n; i++) ;
+		ontopOverPos = i-bstackheight;
+	}
 	astack[astackheight] = -1;
-	bstack[bstackheight+1] = a;
+	bstack[bstackheight+ontopOverPos] = a;
 	state.blockToStack[a] = bstacknum;
 	
+
 	// since we're piling, we need to move all of the things above a, to above a's
 	// new location
 	if(pile){
 		// move everything ontop of a, ontop of a's new location
-		for (i = 0; astack[astackheight+1+i] != -1; i++) {
-			int value = astack[i];
+		for (i = 0; astack[astackheight+1+i] != -1 && astackheight+1+i < state.n; i++) {
+			int value = astack[astackheight+1+i];
 			astack[astackheight+1+i] = -1;
-			bstack[bstackheight+2+i] = value;
+			bstack[bstackheight+ontopOverPos+1+i] = value;
 			state.blockToStack[value] = bstacknum;
 		}
+	}
+
+}
+
+void output_map(State & state) {
+	printf("==\n");
+	int i;
+	for (i = 0; i < state.n; i++) {
+		printf("\t%d -> %d\n", i, state.blockToStack[i]);
 	}
 }
 
 // this function assume the array contains b
 int find_stack_height(int * stack, int b) {
+	#ifdef DEBUG
+	printf("find_stack_height %d:", b); fflush(stdout);
+	outputStack(stack, 10);
+	#endif
 	for(int i = 0; ;i++){
 		if(stack[i] == b)
 			return i;
@@ -144,17 +195,24 @@ void append_to_stack(int * stack, int value) {
 	stack[i] = value;
 }
 
-void output(State state) {
-	int i;
+void outputStack(int * stack, int n) {
 	int j;
+	for (j = 0; j < n ; j++) {
+		#ifndef DEBUG
+		if(stack[j] < 0){
+			break;
+		}
+		#endif
+		printf(" %d", stack[j]);  fflush(stdout);
+	}
+	printf("\n");
+}
+
+void output(State & state) {
+	int i;
 
 	for (i = 0; i < state.n; i++) {
 		printf("%d:", i);
-		
-		for (j = 0; j < state.n && state.stacks[i][j] >= 0 ; j++) {
-			printf(" %d", state.stacks[i][j]);
-		}
-
-		printf("\n");
+		outputStack(state.stacks[i], state.n);
 	}
 }
