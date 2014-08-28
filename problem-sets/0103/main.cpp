@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <unordered_map>
 #include <map>
 #include <set>
 
@@ -15,36 +14,66 @@ struct Box {
 	int d;
 
 	Box(int d) {
+		this->d = d;
 		box = new int[d];
 	}
 
 	~Box(){
-		delete box;
+		delete [] box;
 	}
 
 
 };
 
 
-struct cmp {
-	bool operator()(Box* const& a, Box* const& b) const {
-		for(int i = 0; i < a->d; i++) {
-			if(a->box[i] > b->box[i]) {
-				return false;
-			}
-		}
-		return true;
-	}
-};
-
+typedef struct cmp cmp;
 void solve_nest_boxes(Box ** boxes, int n, int d);
 map<Box*,int,cmp> sort_boxes(Box ** boxes, int n, int d);
 void sort_box(Box * box, int d) ;
 
 #ifdef DEBUG
+void debug_boxes(map<Box*,int,cmp> boxes, int n, int d) ;
 void debug_boxes(Box ** boxes, int n, int d);
 void debug_box(Box * box, int d) ;
 #endif
+
+struct cmp {
+	bool operator()(Box* const& a, Box* const& b) const {
+		bool eq = true;
+#ifdef DEBUG
+		printf("===cmp===\n");
+		printf("a");
+		debug_box(a, a->d);
+		printf("b");
+		debug_box(b, a->d);
+#endif
+		for(int i = 0; i < a->d; i++) {
+			if(a->box[i] != b->box[i]) {
+				eq = false;
+			}
+		}
+		if(eq) {
+#ifdef DEBUG
+			printf("a == b\n");
+#endif
+			return false; // if a == b then !(a < b)
+		}
+
+
+		for(int i = 0; i < a->d; i++) {
+			if(a->box[i] > b->box[i]) {
+#ifdef DEBUG
+				printf("a > b\n");
+#endif
+				return false; // if ( a > b ) then !(a < b)
+			}
+		}
+#ifdef DEBUG
+				printf("a < b\n");
+#endif
+		return true;
+	}
+};
 
 
 int main(int argc, const char *argv[]) {
@@ -74,7 +103,7 @@ int main(int argc, const char *argv[]) {
 		for (int i = 0; i < numOfBoxes; i++) {
 			delete boxes[i];
 		}
-		delete boxes;
+		delete [] boxes;
 #ifdef DEBUG
 		printf("=====================\n");
 #endif
@@ -94,6 +123,7 @@ void solve_nest_boxes(Box ** boxes, int n, int d) {
 
 #ifdef DEBUG
 	debug_boxes(boxes, n, d);
+	debug_boxes(sortedBoxes, n, d);
 #endif
 }
 
@@ -120,13 +150,14 @@ void sort_box(Box * box, int d) {
 
 	i = 0;
 	for(set<int>::iterator itr = sortedBox.begin(); itr != sortedBox.end(); itr++) {
-		box[i] = *itr;
+		box->box[i] = *itr;
 		i++;
 	}
 }
 
 
 void debug_boxes(map<Box*,int,cmp> boxes, int n, int d) {
+	printf("AoAoA\n");
 	for(map<Box*,int,cmp>::iterator itr = boxes.begin(); itr != boxes.end(); itr++) {
 		printf("%d:", itr->second);
 		debug_box(itr->first, d);
@@ -135,6 +166,7 @@ void debug_boxes(map<Box*,int,cmp> boxes, int n, int d) {
 }
 
 void debug_boxes(Box ** boxes, int n, int d) {
+	printf("AoAoA\n");
 	for(int i = 0 ; i < n; i++) {
 			printf("%d:", (i+1));
 		debug_box(boxes[i], d);
