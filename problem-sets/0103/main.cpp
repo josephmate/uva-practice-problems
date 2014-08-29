@@ -31,12 +31,12 @@ void solve_nest_boxes(Box ** boxes, int n, int d);
 void find_longest_chain(map<Box*,int,cmp> boxes, int d, int * longestLen, int * longestStartPosn) ;
 bool fits(Box* a, Box* b);
 map<Box*,int,cmp> sort_boxes(Box ** boxes, int n, int d);
-void sort_box(Box * box, int d) ;
+void sort_box(Box * box) ;
 
 #ifdef DEBUG
 void debug_boxes(map<Box*,int,cmp> boxes, int n, int d) ;
 void debug_boxes(Box ** boxes, int n, int d);
-void debug_box(Box * box, int d) ;
+void debug_box(Box * box) ;
 #endif
 
 struct cmp {
@@ -103,8 +103,8 @@ void solve_nest_boxes(Box ** boxes, int n, int d) {
 	debug_boxes(sortedBoxes, n, d);
 #endif
 
-	int length;
-	int startPosn;
+	int length = 0;
+	int startPosn = -1;
 	find_longest_chain(sortedBoxes, d, &length, &startPosn) ;
 #ifdef DEBUG
 	printf("longest chain length: %d\n", length);
@@ -131,9 +131,24 @@ void find_longest_chain(map<Box*,int,cmp> boxes, int d, int * longestLen, int * 
 		if(prev == NULL) {
 			posn = 0;
 			currentLen = 1;
+#ifdef DEBUG
+			printf("i %d, origPosn %d, start %d, currentLen %d, START ", i, itr->second, posn, currentLen);
+			debug_box(itr->first);
+			printf("\n");
+#endif
 		} else if(fits(prev,itr->first)) {
+#ifdef DEBUG
+			printf("i %d, origPosn %d, start %d, currentLen %d, FITS  ", i, itr->second, posn, currentLen);
+			debug_box(itr->first);
+			printf("\n");
+#endif
 			currentLen++;
 		} else {
+#ifdef DEBUG
+			printf("i %d, origPosn %d, start %d, currentLen %d, START ", i, itr->second, posn, currentLen);
+			debug_box(itr->first);
+			printf("\n");
+#endif
 			// The previous box did not fit.
 			//
 			// We check if the previous chain is longer than the longest chain so far.
@@ -153,15 +168,25 @@ void find_longest_chain(map<Box*,int,cmp> boxes, int d, int * longestLen, int * 
 		i++;
 		prev = itr->first;
 	}
+	if(currentLen > *longestLen) {
+		*longestLen = currentLen;
+		*longestStartPosn = posn;
+	}
 }
 
 bool fits(Box* a, Box* b) {
-	return false;
+	for (int i = 0; i < a->d; i++) {
+		if(a->box[i] > b->box[i]) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 map<Box*,int,cmp> sort_boxes(Box ** boxes, int n, int d) {
 	for (int i = 0; i < n; i++) {
-		sort_box(boxes[i], d);
+		sort_box(boxes[i]);
 	}
 	
 	map<Box*, int,cmp> sortedBoxes;
@@ -172,10 +197,10 @@ map<Box*,int,cmp> sort_boxes(Box ** boxes, int n, int d) {
 	return sortedBoxes;
 }
 
-void sort_box(Box * box, int d) {
+void sort_box(Box * box) {
 	int i;
 	set<int> sortedBox;
-	for (i = 0; i < d; i++) {
+	for (i = 0; i < box->d; i++) {
 		sortedBox.insert(box->box[i]);
 	}
 
@@ -191,7 +216,7 @@ void debug_boxes(map<Box*,int,cmp> boxes, int n, int d) {
 	printf("AoAoA\n");
 	for(map<Box*,int,cmp>::iterator itr = boxes.begin(); itr != boxes.end(); itr++) {
 		printf("%d:", itr->second);
-		debug_box(itr->first, d);
+		debug_box(itr->first);
 		printf("\n");
 	} 
 }
@@ -200,13 +225,13 @@ void debug_boxes(Box ** boxes, int n, int d) {
 	printf("AoAoA\n");
 	for(int i = 0 ; i < n; i++) {
 			printf("%d:", (i+1));
-		debug_box(boxes[i], d);
+		debug_box(boxes[i]);
 		printf("\n");
 	}
 }
 
-void debug_box(Box * box, int d) {
-	for(int j = 0 ; j < d; j++) {
+void debug_box(Box * box) {
+	for(int j = 0 ; j < box->d; j++) {
 		printf("\t%d", box->box[j]);
 	}
 }
