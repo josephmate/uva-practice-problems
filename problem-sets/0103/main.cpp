@@ -204,10 +204,10 @@ void sort_box(Box * box) {
 		sortedBox.insert(box->box[i]);
 	}
 
-	i = 0;
+	i = box->d-1;
 	for(set<int>::iterator itr = sortedBox.begin(); itr != sortedBox.end(); itr++) {
 		box->box[i] = *itr;
-		i++;
+		i--;
 	}
 }
 
