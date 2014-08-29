@@ -39,39 +39,14 @@ void debug_box(Box * box, int d) ;
 
 struct cmp {
 	bool operator()(Box* const& a, Box* const& b) const {
-		bool eq = true;
-#ifdef DEBUG
-		printf("===cmp===\n");
-		printf("a");
-		debug_box(a, a->d);
-		printf("b");
-		debug_box(b, a->d);
-#endif
 		for(int i = 0; i < a->d; i++) {
-			if(a->box[i] != b->box[i]) {
-				eq = false;
+			if(a->box[i] < b->box[i]) {
+				return true; // a < b
+			} else if(a->box[i] > b->box[i]) {
+				return false; // b < a
 			}
 		}
-		if(eq) {
-#ifdef DEBUG
-			printf("a == b\n");
-#endif
-			return false; // if a == b then !(a < b)
-		}
-
-
-		for(int i = 0; i < a->d; i++) {
-			if(a->box[i] > b->box[i]) {
-#ifdef DEBUG
-				printf("a > b\n");
-#endif
-				return false; // if ( a > b ) then !(a < b)
-			}
-		}
-#ifdef DEBUG
-				printf("a < b\n");
-#endif
-		return true;
+		return false; // equal
 	}
 };
 
