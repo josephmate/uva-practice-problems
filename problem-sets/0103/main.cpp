@@ -28,6 +28,8 @@ struct Box {
 
 typedef struct cmp cmp;
 void solve_nest_boxes(Box ** boxes, int n, int d);
+void find_longest_chain(map<Box*,int,cmp> boxes, int d, int * longestLen, int * longestStartPosn) ;
+bool fits(Box* a, Box* b);
 map<Box*,int,cmp> sort_boxes(Box ** boxes, int n, int d);
 void sort_box(Box * box, int d) ;
 
@@ -100,8 +102,62 @@ void solve_nest_boxes(Box ** boxes, int n, int d) {
 	debug_boxes(boxes, n, d);
 	debug_boxes(sortedBoxes, n, d);
 #endif
+
+	int length;
+	int startPosn;
+	find_longest_chain(sortedBoxes, d, &length, &startPosn) ;
+#ifdef DEBUG
+	printf("longest chain length: %d\n", length);
+	printf("start posn of chain: %d\n", startPosn);
+#endif
+
+
+	// output the longest chain that we found
+	
+
 }
 
+// find the longest chain of boxes that fit
+void find_longest_chain(map<Box*,int,cmp> boxes, int d, int * longestLen, int * longestStartPosn) {
+	*longestLen = 0;
+	*longestStartPosn = -1;
+	int currentLen = 0;
+	int i = 0;
+	int posn = 0;
+	Box* prev = NULL;
+
+	for(map<Box*,int,cmp>::iterator itr = boxes.begin(); itr != boxes.end(); itr++) {
+
+		if(prev == NULL) {
+			posn = 0;
+			currentLen = 1;
+		} else if(fits(prev,itr->first)) {
+			currentLen++;
+		} else {
+			// The previous box did not fit.
+			//
+			// We check if the previous chain is longer than the longest chain so far.
+			//
+			// As a result, we reset the the counters
+			// and have this guy as the starting posn.
+			
+			if(currentLen > *longestLen) {
+				*longestLen = currentLen;
+				*longestStartPosn = posn;
+			}
+
+			posn = i;
+			currentLen = 1;
+		}
+		
+		i++;
+		prev = itr->first;
+	}
+}
+
+bool fits(Box* a, Box* b) {
+	return false;
+}
 
 map<Box*,int,cmp> sort_boxes(Box ** boxes, int n, int d) {
 	for (int i = 0; i < n; i++) {
