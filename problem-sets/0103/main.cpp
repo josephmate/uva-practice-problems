@@ -3,6 +3,7 @@
 #include <string.h>
 #include <map>
 #include <set>
+#include <unordered_set>
 #include <vector>
 
 using namespace std;
@@ -130,7 +131,15 @@ vector<int>* find_longest_chain(Box ** boxes, int n, int d) {
 	return result;
 }
 
-vector<int>* bfs_impl(bool ** adjmat, int n, set<int> * visited, int current, int depth) {
+struct Memo {
+	unordered_set<int>* visited;
+	int current;
+
+
+};
+
+//TODO: if replace treeset with hashset doesn't work, try memoization
+vector<int>* bfs_impl(bool ** adjmat, int n, unordered_set<int> * visited, int current, int depth) {
 	int max = 0;
 	vector<int> * best = NULL;
 
@@ -162,7 +171,7 @@ vector<int>* bfs(bool ** adjmat, int n) {
 	vector<int> * best;
 
 	for (int i = 0; i < n; i++) {
-		set<int> visited;
+		unordered_set<int> visited;
 		visited.insert(i);
 		vector<int>* attempt = bfs_impl(adjmat, n, &visited, i, 1);
 		if(attempt->size() > max) {
