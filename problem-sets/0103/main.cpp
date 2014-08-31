@@ -2,13 +2,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <unordered_set>
 #include <vector>
 
 using namespace std;
 
-//#define DEBUG
+#define DEBUG
 
 struct Box {
 
@@ -27,15 +28,18 @@ struct Box {
 
 };
 
-
+typedef struct Memo Memo;
+typedef struct keyhasher keyhasher;
 void solve_nest_boxes(Box ** boxes, int n, int d);
 vector<int>* find_longest_chain(Box ** boxes, int n, int d) ;
-vector<int>* bfs(bool ** adjmat, int n) ;
+vector<int>* search(bool ** adjmat, int n) ;
 bool fits(Box* a, Box* b);
 void sort_boxes(Box ** boxes, int n, int d);
 void sort_box(Box * box) ;
 
 #ifdef DEBUG
+void debug_memos(unordered_map<Memo, vector<int>*, keyhasher> * memos) ;
+void debug_vector(const vector<int> * vs) ;
 void debug_adjmat(bool ** adjmat, int n);
 void debug_boxes(Box ** boxes, int n, int d);
 void debug_box(Box * box) ;
@@ -121,7 +125,7 @@ vector<int>* find_longest_chain(Box ** boxes, int n, int d) {
 	debug_adjmat(adjmat,n);
 #endif
 
-	vector<int>* result = bfs(adjmat, n);
+	vector<int>* result = search(adjmat, n);
 
 	for (int i = 0; i < n; i++) {
 		delete [] adjmat[i];
@@ -132,14 +136,65 @@ vector<int>* find_longest_chain(Box ** boxes, int n, int d) {
 }
 
 struct Memo {
-	unordered_set<int>* visited;
-	int current;
+	vector<int> visitorder;
 
+	Memo(vector<int>  v) {
+		visitorder = v;
+	}
 
+	bool operator==(const Memo &other) const {
+		if(this->visitorder.size() != other.visitorder.size()) {
+			return false;
+		}
+
+		vector<int>::const_iterator itrA = this->visitorder.begin();
+		vector<int>::const_iterator itrB = other.visitorder.begin();
+		while(itrA != this->visitorder.end() ) {
+			if(*itrA != *itrB){
+				return false;
+			}
+
+			itrA++;
+			itrB++;
+		}
+
+		return true;
+
+	}
 };
 
+struct keyhasher {
+	std::size_t operator()(const Memo& k) const {
+		size_t ret = 0;
+
+		for(vector<int>::const_iterator itr = k.visitorder.begin(); itr != k.visitorder.end(); itr++) {
+			ret = ret << 1;
+			ret += *itr;
+		}
+
+		return ret;
+	}
+};
+
+
 //TODO: if replace treeset with hashset doesn't work, try memoization
-vector<int>* bfs_impl(bool ** adjmat, int n, unordered_set<int> * visited, int current, int depth) {
+vector<int>* search_impl(
+		bool ** adjmat, 
+		int n,
+		unordered_map<Memo, vector<int>*, keyhasher> * memos,
+		Memo memo, // the order in which we visited matters for the memoization
+		set<int> * visited, 
+		int current,
+		int depth) {
+	
+	if(memos->count(memo) > 0) {
+#ifdef DEBUG
+		printf("CACHED\n");
+#endif
+		return memos->find(memo)->second;
+	}
+
+
 	int max = 0;
 	vector<int> * best = NULL;
 
@@ -147,12 +202,12 @@ vector<int>* bfs_impl(bool ** adjmat, int n, unordered_set<int> * visited, int c
 	for (int i = 0; i < n; i++) {
 		if(visited->find(i) == visited->end() && adjmat[i][current]) {
 			visited->insert(i);
-			vector<int> * attempt = bfs_impl(adjmat, n, visited, i, depth + 1);
+			Memo newmemo(memo.visitorder);
+			newmemo.visitorder.push_back(i);
+			vector<int> * attempt = search_impl(adjmat, n, memos, newmemo, visited, i, depth + 1);
 			if(attempt->size() > max) {
 				best = attempt;
 				max = attempt->size();
-			} else {
-				delete attempt;
 			}
 			visited->erase(i);
 		}
@@ -162,23 +217,28 @@ vector<int>* bfs_impl(bool ** adjmat, int n, unordered_set<int> * visited, int c
 		best = new vector<int>();
 	}	
 	best->push_back(current);
+
+	(*memos)[memo] = best;
 	return best;
 }
 
-// depth first search
-vector<int>* bfs(bool ** adjmat, int n) {
+// graph search
+vector<int>* search(bool ** adjmat, int n) {
+	unordered_map<Memo, vector<int>*, keyhasher> * memos = new unordered_map<Memo, vector<int>*, keyhasher>();
 	unsigned int max = 0;
 	vector<int> * best;
 
 	for (int i = 0; i < n; i++) {
-		unordered_set<int> visited;
-		visited.insert(i);
-		vector<int>* attempt = bfs_impl(adjmat, n, &visited, i, 1);
+		set<int> visited; visited.insert(i);
+
+		vector<int> visitorder; visitorder.push_back(i);
+		Memo memo(visitorder);
+
+		vector<int>* attempt = search_impl(adjmat, n, memos, memo, &visited, i, 1);
+
 		if(attempt->size() > max) {
 			best = attempt;
 			max = attempt->size();
-		} else {
-			delete attempt;
 		}
 	}
 
@@ -217,7 +277,25 @@ void sort_box(Box * box) {
 	}
 }
 
+
 #ifdef DEBUG
+void debug_memos(unordered_map<Memo, vector<int>*, keyhasher> * memos) {
+	unordered_map<Memo, vector<int>*, keyhasher>::const_iterator itr;
+	for( itr = memos->begin(); itr != memos->end(); itr++) {
+		debug_vector( &itr->first.visitorder);
+		printf(" --> ");
+		debug_vector(itr->second);
+		printf("\n");
+	}
+
+}
+
+void debug_vector(const vector<int> * vs) {
+	for(vector<int>::const_iterator itr = vs->begin(); itr != vs->end(); itr++) {
+		printf("%d\t", *itr);
+	}
+}
+
 void debug_adjmat(bool ** adjmat, int n) {
 	for(int i = 0 ; i < n; i++) {
 		for(int j = 0 ; j < n; j++) {
