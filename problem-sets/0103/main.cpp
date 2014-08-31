@@ -125,6 +125,13 @@ vector<int>* find_longest_chain(Box ** boxes, int n, int d) {
 	debug_adjmat(adjmat,n);
 #endif
 
+	//TODO:
+	// 1) remove all duplicates
+	// 2) make adj matrix
+	// 3) find all nodes that have no nodes pointing to it
+	// 4) figure out which has the largest depth
+	// 5) expand with duplicates included
+
 	vector<int>* result = search(adjmat, n);
 
 	for (int i = 0; i < n; i++) {
