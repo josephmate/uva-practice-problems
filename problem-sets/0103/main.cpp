@@ -177,7 +177,6 @@ struct keyhasher {
 };
 
 
-//TODO: if replace treeset with hashset doesn't work, try memoization
 vector<int>* search_impl(
 		bool ** adjmat, 
 		int n,
@@ -186,6 +185,10 @@ vector<int>* search_impl(
 		set<int> * visited, 
 		int current,
 		int depth) {
+#ifdef DEBUG
+	printf("Memos so far\n");
+	debug_memos(memos);
+#endif
 	
 	if(memos->count(memo) > 0) {
 #ifdef DEBUG
