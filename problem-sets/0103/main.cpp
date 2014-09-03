@@ -130,12 +130,14 @@ vector<int>* find_longest_chain(Box ** boxes, int n, int d) {
 	// an explosion in the number of edges!
 	//
 	// The only way to deal with this problem is to remove those extra edges.
-	//remove_transitive_edges(adjmat,n);
+	/*
+	remove_transitive_edges(adjmat,n);
 
 #ifdef DEBUG 
 	printf("--------------------\n");
 	debug_adjmat(adjmat,n);
 #endif
+	*/
 
 	vector<int>* result = search(adjmat, n);
 
@@ -220,19 +222,36 @@ vector<int>* search_impl(
 	return best;
 }
 
+bool isroot(bool ** adjmat, int n, int i) {
+	int sum = 0;
+	for (int j = 0; j < n; j++) {
+		if(adjmat[i][j]) {
+			sum++;
+		}
+	}
+
+#ifdef DEBUG
+	printf("isroot %d: %d\n", (i+1), sum);
+#endif
+
+	return sum == 0;
+}
+
 // graph search
 vector<int>* search(bool ** adjmat, int n) {
 	unsigned int max = 0;
 	vector<int> * best;
 
 	for (int i = 0; i < n; i++) {
-		set<int> visited; visited.insert(i);
+		if(isroot(adjmat, n, i)) {
+			set<int> visited; visited.insert(i);
 
-		vector<int>* attempt = search_impl(adjmat, n, &visited, i, 1);
+			vector<int>* attempt = search_impl(adjmat, n, &visited, i, 1);
 
-		if(attempt->size() > max) {
-			best = attempt;
-			max = attempt->size();
+			if(attempt->size() > max) {
+				best = attempt;
+				max = attempt->size();
+			}
 		}
 	}
 
