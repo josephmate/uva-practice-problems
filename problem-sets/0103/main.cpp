@@ -45,19 +45,13 @@ void debug_box(Box * box) ;
 
 int main(int argc, const char *argv[]) {
 	int numOfBoxes, dimension;
-	bool first = true;
 
 	// read in how many stacks and blocks we have
 	while(scanf("%d %d\n", &numOfBoxes, &dimension) > 0) {
-		if(first) {
-			first = false;
-		} else {
-			printf("\n");
-		}
 		
 		// edge case -- no boxes
 		if(numOfBoxes == 0) {
-			printf("0");
+			printf("0\n");
 			continue;
 		}
 
@@ -93,6 +87,7 @@ int main(int argc, const char *argv[]) {
 
 void solve_nest_boxes(Box ** boxes, int n, int d) {
 #ifdef DEBUG
+	printf("unsorted\n");
 	debug_boxes(boxes, n, d);
 #endif
 
@@ -100,6 +95,7 @@ void solve_nest_boxes(Box ** boxes, int n, int d) {
 	sort_boxes(boxes,n,d);
 
 #ifdef DEBUG
+	printf("sorted\n");
 	debug_boxes(boxes, n, d);
 #endif
 
@@ -113,6 +109,7 @@ void solve_nest_boxes(Box ** boxes, int n, int d) {
 		}
 		printf("%d", (*itr) + 1);
 	}
+	printf("\n");fflush(stdout);
 	
 	delete longestChain;
 }
@@ -290,15 +287,21 @@ void sort_boxes(Box ** boxes, int n, int d) {
 
 void sort_box(Box * box) {
 	int i;
-	set<int> sortedBox;
+	multiset<int> sortedBox;
 	for (i = 0; i < box->d; i++) {
+#ifdef DEBUG
+		printf("original sort_box %d %d\n", i, box->box[i]);
+#endif
 		sortedBox.insert(box->box[i]);
 	}
 
-	i = box->d-1;
-	for(set<int>::iterator itr = sortedBox.begin(); itr != sortedBox.end(); itr++) {
+	i = 0;
+	for(multiset<int>::iterator itr = sortedBox.begin(); itr != sortedBox.end(); itr++) {
+#ifdef DEBUG
+		printf("sorted sort_box %d %d\n", i, *itr);
+#endif
 		box->box[i] = *itr;
-		i--;
+		i++;
 	}
 }
 
@@ -320,7 +323,6 @@ void debug_adjmat(bool ** adjmat, int n) {
 }
 
 void debug_boxes(Box ** boxes, int n, int d) {
-	printf("AoAoA\n");
 	for(int i = 0 ; i < n; i++) {
 			printf("%d:", (i+1));
 		debug_box(boxes[i]);
