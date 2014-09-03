@@ -45,13 +45,19 @@ void debug_box(Box * box) ;
 
 int main(int argc, const char *argv[]) {
 	int numOfBoxes, dimension;
+	bool first = true;
 
 	// read in how many stacks and blocks we have
 	while(scanf("%d %d\n", &numOfBoxes, &dimension) > 0) {
+		if(first) {
+			first = false;
+		} else {
+			printf("\n");
+		}
 		
 		// edge case -- no boxes
 		if(numOfBoxes == 0) {
-			printf("0\n");
+			printf("0");
 			continue;
 		}
 
@@ -107,7 +113,6 @@ void solve_nest_boxes(Box ** boxes, int n, int d) {
 		}
 		printf("%d", (*itr) + 1);
 	}
-	printf("\n");fflush(stdout);
 	
 	delete longestChain;
 }
