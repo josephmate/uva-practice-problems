@@ -242,10 +242,12 @@ vector<int>* search(bool ** adjmat, int n) {
 }
 
 
-
+// assumes the dimensions of the boxes are sorted
+// 
+// box a fits in box b iff a_i < b_i for all i:[1,d]
 bool fits(Box* a, Box* b) {
 	for (int i = 0; i < a->d; i++) {
-		if(a->box[i] > b->box[i]) {
+		if(a->box[i] >= b->box[i]) {
 			return false;
 		}
 	}
