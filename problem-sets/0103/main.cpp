@@ -28,8 +28,6 @@ struct Box {
 
 };
 
-typedef struct Memo Memo;
-typedef struct keyhasher keyhasher;
 void solve_nest_boxes(Box ** boxes, int n, int d);
 void remove_transitive_edges(bool ** adjmat,int n);
 vector<int>* find_longest_chain(Box ** boxes, int n, int d) ;
@@ -132,7 +130,7 @@ vector<int>* find_longest_chain(Box ** boxes, int n, int d) {
 	// an explosion in the number of edges!
 	//
 	// The only way to deal with this problem is to remove those extra edges.
-	remove_transitive_edges(adjmat,n);
+	//remove_transitive_edges(adjmat,n);
 
 #ifdef DEBUG 
 	printf("--------------------\n");
