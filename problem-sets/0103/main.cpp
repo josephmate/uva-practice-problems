@@ -31,6 +31,7 @@ struct Box {
 typedef struct Memo Memo;
 typedef struct keyhasher keyhasher;
 void solve_nest_boxes(Box ** boxes, int n, int d);
+void remove_transitive_edges(bool ** adjmat,int n);
 vector<int>* find_longest_chain(Box ** boxes, int n, int d) ;
 vector<int>* search(bool ** adjmat, int n) ;
 bool fits(Box* a, Box* b);
@@ -135,6 +136,9 @@ vector<int>* find_longest_chain(Box ** boxes, int n, int d) {
 	//
 	// TODO: remove non-direct fits edges
 
+
+	remove_transitive_edges(adjmat,n);
+
 	vector<int>* result = search(adjmat, n);
 
 	for (int i = 0; i < n; i++) {
@@ -145,6 +149,21 @@ vector<int>* find_longest_chain(Box ** boxes, int n, int d) {
 	return result;
 }
 
+// 1) if depth is >= 2
+//   a) remove startnode <- currentnode from adjmat
+// 2) recursively follow edges backwards
+void remove_transitive_edges_impl(bool ** adjmat,int n, int startnode, int currentnode, int depth) {
+
+}
+
+// We remove transiant edges by traversing the graph structure. Any node that we
+// hopped to by following at least two edges transiantly fits into the node we
+// started from.
+void remove_transitive_edges(bool ** adjmat,int n) {
+	// iterative over all starting nodes
+}
+
+// TODO: remove this memo stuff - does not doing anything
 struct Memo {
 	vector<int> visitorder;
 
