@@ -10,7 +10,9 @@
 using namespace std;
 
 #define DEBUG
-void solve_exrates(double ** exrates, int d);
+void solve_exrates(double ** exrates, int dimension);
+vector<int> convertBinaryToPath(int binaryDigit, int dimension);
+double calcValueOfPath(double ** exrates, int dimension, vector<int> path);
 
 #ifdef DEBUG
 void debug_exrates(double ** exrates, int d);
@@ -57,10 +59,61 @@ int main(int argc, const char *argv[])
 	return 0;
 }
 
-void solve_exrates(double ** exrates, int d) {
+void solve_exrates(double ** exrates, int dimension) {
+	// 2^(dimension+1) - 1
+	// implemented using bit shift
+	int possiblePaths = (1<<(dimension))-1;
 #ifdef DEBUG
-	debug_exrates(exrates,d);
+	debug_exrates(exrates, dimension);
+	printf("possiblePaths: %d\n", possiblePaths);
 #endif
+	// First thing to recognize is that the order in which you traverse the exchanges does not matter.
+	// The order does not matter because each exchange is a multiplication.
+	// Ex: a * b * c = c * b * a
+	// As a result, we can enumerate all possible exchange paths as a binary number.
+	// 0 means we did not visit that exchange.
+	// 1 means we visited that exchange.
+	// This would take d digits
+	// In the largest possible input, that's a 20 digit binary number
+	// 2^21-1 = 2,097,151 possible exchange paths
+	// that not that big to brute force.
+	// In total, we would do 20*2,097,151=41,943,020 multiplications to explore all possible exchange paths.
+	for(int i = 1; i <= possiblePaths; i++) {
+		vector<int> pathToTry = convertBinaryToPath(i, dimension);
+		double valueOfPath = calcValueOfPath(exrates, dimension, pathToTry);
+#ifdef DEBUG
+		printf("value: %lf\n", valueOfPath);
+#endif
+	}
+}
+
+vector<int> convertBinaryToPath(int binaryDigit, int dimension){
+	vector<int> path;
+	for(int i = 0; i < dimension; i++) {
+		if(binaryDigit & 1 == 1){
+			path.push_back(i);
+		}
+		binaryDigit = binaryDigit >> 1;
+	}
+#ifdef DEBUG
+	printf("path: ");
+	for(int i = 0; i < path.size(); i++) {
+		printf("%d, ",path.at(i));
+	}
+	printf("\n");
+#endif
+	return path;
+}
+
+double calcValueOfPath(double ** exrates, int dimension, vector<int> path) {
+	double value = 1.0;
+	for(int i = 1; i < path.size(); i++) {
+		int start = path.at(i-1);
+		int end = path.at(i);
+		value = value * exrates[start][end];
+	}
+	int start = path.at(end)
+	return value;
 }
 
 #ifdef DEBUG
