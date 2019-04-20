@@ -78,6 +78,13 @@ void solve_exrates(double ** exrates, int dimension) {
 	// 2^21-1 = 2,097,151 possible exchange paths
 	// that not that big to brute force.
 	// In total, we would do 20*2,097,151=41,943,020 multiplications to explore all possible exchange paths.
+	/////////////////////////////////////////////////////
+	// THIS ASSUMPTION WAS INCORRECT!!!
+	// It's true that the order of the mutliplication does not matter. However, the order in which you visit
+	// the nodes matters because each edge has a different exchange rate. As a result, I have to consider all
+	// possible paths some how. I hope that this can reduce to shortest path some how. Otherwise I'm not sure
+	// how to solve it.
+	/////////////////////////////////////////////////////
 	for(int i = 1; i <= possiblePaths; i++) {
 		vector<int> pathToTry = convertBinaryToPath(i, dimension);
 		double valueOfPath = calcValueOfPath(exrates, dimension, pathToTry);

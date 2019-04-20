@@ -12,20 +12,61 @@ using namespace std;
 #define DEBUG
 
 
+struct BuildingDimension {
+	int leftx;
+	int height;
+	int rightx;
+};
+
+#ifdef DEBUG
+void                        printBuildingDimensions(vector<BuildingDimension*>* input);
+#endif
+
+
+vector<BuildingDimension*>* parseBuildingDimensions();
+void                        freeBuildingDimensions(vector<BuildingDimension*>*);
 
 int main(int argc, const char *argv[])
 {
-	char action1[5];
-	char action2[5];
-	int n, a, b;
-
-	// read in how many stacks and blocks we have
-	fscanf(stdin, "%d\n", &n);
-
-	while (fscanf(stdin, "%s %d %s %d\n", action1, &a, action2, &b) > 0 && action1[0] != 'q') {
-	}	 
-	
+	vector<BuildingDimension*>* input = parseBuildingDimensions();
+#ifdef DEBUG
+	printBuildingDimensions(input);
+#endif
+	freeBuildingDimensions(input);
 	return 0;
 }
 
 
+vector<BuildingDimension*>* parseBuildingDimensions() {
+	vector<BuildingDimension*>* input = new vector<BuildingDimension*>();
+	int leftx;
+	int height;
+	int rightx;
+
+	while (fscanf(stdin, "%d %d %d\n", &leftx, &height, &rightx) > 0) {
+		BuildingDimension* buildingDimension = new BuildingDimension();
+		buildingDimension->leftx = leftx;
+		buildingDimension->height = height;
+		buildingDimension->rightx = rightx;
+		input->push_back(buildingDimension);
+	}	 
+
+	return input;
+}
+
+void freeBuildingDimensions(vector<BuildingDimension*>* input){
+	for(int i = 0; i < input->size(); i++) {
+		BuildingDimension* buildingDimension = input->at(i);
+		delete buildingDimension;
+	}
+	delete input;
+}
+
+#ifdef DEBUG
+void printBuildingDimensions(vector<BuildingDimension*>* input) {
+	for(int i = 0; i < input->size(); i++) {
+		BuildingDimension* buildingDimension = input->at(i);
+		printf("%d %d %d\n", buildingDimension->leftx, buildingDimension->height, buildingDimension->rightx);
+	}
+}
+#endif
