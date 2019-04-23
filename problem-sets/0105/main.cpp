@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 #include <map>
 #include <unordered_map>
 #include <set>
@@ -12,6 +13,12 @@ using namespace std;
 #define DEBUG
 
 
+struct Skyline {
+	int minX;
+	int maxX;
+	int* heights;
+};
+
 struct BuildingDimension {
 	int leftx;
 	int height;
@@ -20,13 +27,16 @@ struct BuildingDimension {
 
 #ifdef DEBUG
 void                        printBuildingDimensions(vector<BuildingDimension*>*);
+void                        printDebugSkyline(Skyline* skyline);
 #endif
 
 
 vector<BuildingDimension*>* parseBuildingDimensions();
 void                        freeBuildingDimensions(vector<BuildingDimension*>*);
-int*                        calculateSkyline(vector<BuildingDimension*>*);
-void                        printSkyline(int*);
+Skyline*                    calculateSkyline(vector<BuildingDimension*>*);
+int                         getSkylineIndex(Skyline*, int);
+void                        freeSkyline(Skyline*);
+void                        printSkyline(Skyline*);
 
 int main(int argc, const char *argv[])
 {
@@ -35,11 +45,14 @@ int main(int argc, const char *argv[])
 	printBuildingDimensions(buildingDimensions);
 #endif
 	
-	int* skyline = calculateSkyline(buildingDimensions);
+	Skyline* skyline = calculateSkyline(buildingDimensions);
+#ifdef DEBUG
+	printDebugSkyline(skyline);
+#endif
 	printSkyline(skyline);
 
 	freeBuildingDimensions(buildingDimensions);
-	delete skyline;
+	freeSkyline(skyline);
 	return 0;
 }
 
@@ -79,11 +92,53 @@ void freeBuildingDimensions(vector<BuildingDimension*>* buildingDimensions){
  * The array is critical here because index into the array is O(1) and the
  * array represents the max height found so far at x cordinate i-1
  */
-int* calculateSkyline(vector<BuildingDimension*>* buildingDimensions) {
-	return new int[0];
+Skyline* calculateSkyline(vector<BuildingDimension*>* buildingDimensions) {
+	Skyline* skyline = new Skyline();
+	skyline->minX = INT_MAX;
+	skyline->maxX = 0;
+
+	// computing the bounds of the skyline
+	for(int i = 0; i < buildingDimensions->size(); i++) {
+		BuildingDimension* buildingDimension = buildingDimensions->at(i);
+		if(buildingDimension->leftx < skyline->minX) {
+			skyline->minX = buildingDimension->leftx;
+		}
+		if(buildingDimension->rightx > skyline->maxX) {
+			skyline->maxX = buildingDimension->rightx;
+		}
+	}
+
+	int len = skyline->maxX-skyline->minX;
+	skyline->heights = new int[len];
+	for(int i = 0; i < len; i++) {
+		skyline->heights[i] = 0;
+	}
+
+	// compute the maxes so far, building by building
+	for(int i = 0; i < buildingDimensions->size(); i++) {
+		BuildingDimension* buildingDimension = buildingDimensions->at(i);
+		for(int j = buildingDimension->leftx; j <= buildingDimension->rightx; j++) {
+			int idx = getSkylineIndex(skyline, j);
+			if(buildingDimension->height > skyline->heights[idx]) {
+				skyline->heights[idx] = buildingDimension->height;
+			}
+		}
+	}
+
+	return skyline;
 }
 
-void printSkyline(int* skyline){
+int getSkylineIndex(Skyline* skyline, int x) {
+	return x-skyline->minX;
+}
+
+
+void printSkyline(Skyline* skyline){
+}
+
+void freeSkyline(Skyline* skyline) {
+	delete skyline->heights;
+	delete skyline;
 }
 
 #ifdef DEBUG
@@ -92,5 +147,16 @@ void printBuildingDimensions(vector<BuildingDimension*>* buildingDimensions) {
 		BuildingDimension* buildingDimension = buildingDimensions->at(i);
 		printf("%d %d %d\n", buildingDimension->leftx, buildingDimension->height, buildingDimension->rightx);
 	}
+	printf("================\n");
+}
+void printDebugSkyline(Skyline* skyline){
+	int len = skyline->maxX-skyline->minX;
+	printf("leftmost:  %d\n", skyline->minX);
+	printf("rightmost: %d\n", skyline->maxX);
+	for(int i = 0; i < len; i++) {
+		printf("%d ", skyline->heights[i]);
+	}
+	printf("\n");
+	printf("================\n");
 }
 #endif
