@@ -10,9 +10,6 @@
 
 using namespace std;
 
-#define DEBUG
-
-
 struct Skyline {
 	int minX;
 	int maxX;
@@ -134,6 +131,16 @@ int getSkylineIndex(Skyline* skyline, int x) {
 
 
 void printSkyline(Skyline* skyline){
+	int curr = -1;
+	int len = skyline->maxX-skyline->minX;
+	for(int i = 0; i < len; i++) {
+		int next = skyline->heights[i];
+		if(next != curr) {
+			curr = next;
+			printf("%d %d ", i + skyline->minX, curr);
+		}
+	}
+	printf("%d %d\n", skyline->maxX, 0);
 }
 
 void freeSkyline(Skyline* skyline) {
