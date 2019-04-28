@@ -114,7 +114,7 @@ Skyline* calculateSkyline(vector<BuildingDimension*>* buildingDimensions) {
 	// compute the maxes so far, building by building
 	for(int i = 0; i < buildingDimensions->size(); i++) {
 		BuildingDimension* buildingDimension = buildingDimensions->at(i);
-		for(int j = buildingDimension->leftx; j <= buildingDimension->rightx; j++) {
+		for(int j = buildingDimension->leftx; j < buildingDimension->rightx; j++) {
 			int idx = getSkylineIndex(skyline, j);
 			if(buildingDimension->height > skyline->heights[idx]) {
 				skyline->heights[idx] = buildingDimension->height;
@@ -136,13 +136,7 @@ void printSkyline(Skyline* skyline){
 	for(int i = 0; i < len; i++) {
 		int next = skyline->heights[i];
 		if(next != curr) {
-			if(next > curr) {
-				// going up uses the next posn
-				printf("%d %d ", i + skyline->minX, next);
-			} else {
-				// going down uses the curr posn
-				printf("%d %d ", i + skyline->minX-1, next);
-			}
+			printf("%d %d ", i + skyline->minX, next);
 			curr = next;
 		}
 	}
