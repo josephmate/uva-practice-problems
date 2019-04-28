@@ -15,14 +15,11 @@ using namespace std;
 
 int main(int argc, const char *argv[])
 {
-	char action1[5];
-	char action2[5];
-	int n, a, b;
-
-	// read in how many stacks and blocks we have
-	fscanf(stdin, "%d\n", &n);
-
-	while (fscanf(stdin, "%s %d %s %d\n", action1, &a, action2, &b) > 0 && action1[0] != 'q') {
+	int n;
+	while (fscanf(stdin, "%d\n", &n)> 0) {
+#ifdef DEBUG
+		printf("%d\n", n);
+#endif
 	}	 
 	
 	return 0;
