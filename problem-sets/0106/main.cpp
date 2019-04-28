@@ -9,14 +9,27 @@
 
 using namespace std;
 
-struct Pair {
-	int a;
-	int b;
+struct IntegerSqrtResult {
+	bool found;
+	long long result;
 };
-Pair solve(int n);
-void printResult(Pair);
+
+struct TripletResult {
+	// the number of relatively prime triplets x,y,z with the constraints
+	// 1) x^2 + y^2 = z^z
+	// 2) x <= y <= z
+	// 3) x,y,z share no divsors
+	long long numRelativelyPrime;
+
+	// The second numberis the number of positive integers <= N that are not part of any triple whose components are all <= N
+	// TODO: not sure what this second number is yet
+	long long b;
+};
+TripletResult solve(long long n);
+void printResult(TripletResult);
 bool* calcIsPrimeArray();
-vector<int>* getPrimes(bool*);
+vector<long long>* getPrimes(bool*);
+IntegerSqrtResult intSqrt(long long);
 
 
 
@@ -24,24 +37,24 @@ int main(int argc, const char *argv[])
 {
 	bool* isPrime = calcIsPrimeArray();
 #ifdef DEBUG
-	for(int i = 0; i < 1001; i++) {
+	for(long long i = 0; i < 1001; i++) {
 		printf("%d %s\n", i, (isPrime[i])?"true":"false");
 	}
 #endif
-	vector<int>* primes = getPrimes(isPrime);
+	vector<long long>* primes = getPrimes(isPrime);
 #ifdef DEBUG
-	for(int i = 0; i < primes->size(); i++) {
+	for(long long i = 0; i < primes->size(); i++) {
 		printf("prime %d\n", primes->at(i));
 	}
 #endif
 
-	int n;
+	long long n;
 	while (fscanf(stdin, "%d\n", &n)> 0) {
 #ifdef DEBUG
 		printf("%d\n", n);
 #endif
-		Pair pair = solve(n);
-		printResult(pair);
+		TripletResult result = solve(n);
+		printResult(result);
 	}	 
 
 	delete isPrime;
@@ -52,12 +65,12 @@ int main(int argc, const char *argv[])
 bool* calcIsPrimeArray() {
 	bool* isPrime = new bool[1001];
 	isPrime[0] = false;
-	for(int i = 1; i < 1001; i++) {
+	for(long long i = 1; i < 1001; i++) {
 		isPrime[i] = true;
 	}
-	for(int i = 2; i < 1001; i++) {
+	for(long long i = 2; i < 1001; i++) {
 		if(isPrime[i]) {
-			for(int j = 2; i*j<1001; j++) {
+			for(long long j = 2; i*j<1001; j++) {
 				isPrime[i*j] = false;
 			}
 		}
@@ -65,9 +78,9 @@ bool* calcIsPrimeArray() {
 	return isPrime;
 }
 
-vector<int>* getPrimes(bool* isPrime) {
-	vector<int>* primes = new vector<int>();
-	for(int i = 0; i < 1001; i++) {
+vector<long long>* getPrimes(bool* isPrime) {
+	vector<long long>* primes = new vector<long long>();
+	for(long long i = 0; i < 1001; i++) {
 		if(isPrime[i]) {
 			primes->push_back(i);
 		}
@@ -75,13 +88,43 @@ vector<int>* getPrimes(bool* isPrime) {
 	return primes;
 }
 
-Pair solve(int n) {
-	Pair pair;
-	pair.a = 0;
-	pair.b = 0;
-	return pair;
+// binary search for a square root
+IntegerSqrtResult intSqrt(long long sqrtee){
+	IntegerSqrtResult result;
+	result.found = false;
+	long long lowerBound = 1;
+	long long upperBound = sqrtee;
+	while(true) {
+		if(lowerBound > upperBound) {
+			return result; // NOT FOUND
+		}
+		long long midPoint = (lowerBound + upperBound)/2;
+		long long midSquared = midPoint*midPoint;
+		if(midSquared == sqrtee) {
+			result.found = true;
+			result.result = midPoint;
+			return result;
+		} else if(midSquared > sqrtee) {
+			upperBound = midPoint;
+		} else { // midSquared < sqrtee
+			lowerBound = midPoint;
+		}
+	}
 }
 
-void printResult(Pair p) {
-	printf("%d %d\n", p.a, p.b);
+TripletResult solve(long long n) {
+	TripletResult result;
+	result.numRelativelyPrime = 0;
+	result.b = 0;
+	
+	for(long long x = 1; x <= 1000; x++) {
+		for(long long y = x; y <= 1000; y++) {
+		}
+	}
+
+	return result;
+}
+
+void printResult(TripletResult result) {
+	printf("%d %d\n", result.numRelativelyPrime, result.b);
 }
