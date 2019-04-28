@@ -136,8 +136,14 @@ void printSkyline(Skyline* skyline){
 	for(int i = 0; i < len; i++) {
 		int next = skyline->heights[i];
 		if(next != curr) {
+			if(next > curr) {
+				// going up uses the next posn
+				printf("%d %d ", i + skyline->minX, next);
+			} else {
+				// going down uses the curr posn
+				printf("%d %d ", i + skyline->minX-1, next);
+			}
 			curr = next;
-			printf("%d %d ", i + skyline->minX, curr);
 		}
 	}
 	printf("%d %d\n", skyline->maxX, 0);
